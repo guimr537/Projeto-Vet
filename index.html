@@ -116,7 +116,7 @@
                         <i class="fa-solid fa-user-pen"></i>
                     </div>
                     <h3 class="text-lg font-bold mb-2 text-dark">Autonomia para Tutores</h3>
-                    <p class="text-slate-600 text-sm leading-relaxed">Cadastre cães e gatos, informe dados de identificação, histórico e consulte status de agendamentos e notifications em tempo real.</p>
+                    <p class="text-slate-600 text-sm leading-relaxed">Cadastre cães e gatos, informe dados de identificação, histórico e consulte status de agendamentos e notificações em tempo real.</p>
                 </div>
                 <div class="bg-white p-8 rounded-2xl border border-border shadow-sm hover:shadow-md transition">
                     <div class="w-12 h-12 bg-blue-50 text-dark rounded-xl flex items-center justify-center text-xl mb-4 font-bold">
@@ -258,7 +258,6 @@
                     <h2 class="text-3xl font-bold tracking-tight text-dark">Clínicas Parceiras</h2>
                     <p class="text-slate-600 text-sm mt-1">Rede de clínicas cadastradas para requisição de doadores, transferência de animais e contato institucional com a Uninassau.</p>
                 </div>
-                <!-- O botão fixo antigo foi removido daqui. O botão "Adicionar Clínica" aparecerá dinamicamente apenas para o Admin através do script.js -->
             </div>
 
             <div class="grid grid-cols-1 md:grid-cols-2 gap-6" id="clinics-grid">
@@ -609,6 +608,87 @@
                     <textarea id="cc-message" rows="4" required class="w-full px-4 py-3 bg-slate-50 border border-border rounded-xl text-sm"></textarea>
                 </div>
                 <button type="submit" class="w-full py-3.5 bg-dark text-white rounded-xl font-semibold hover:bg-blue-900 transition shadow-md">Enviar</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- MODAL: PRONTUÁRIO E ELEGIBILIDADE DE DOAÇÃO (Sem códigos de requisitos) -->
+    <div id="medical-record-modal" class="fixed inset-0 bg-black/50 z-50 hidden flex items-center justify-center p-4">
+        <div class="bg-white rounded-3xl max-w-2xl w-full p-8 shadow-2xl relative fade-in max-h-[90vh] overflow-y-auto">
+            <button onclick="closeModal('medical-record-modal')" class="absolute top-6 right-6 text-slate-400 hover:text-dark">
+                <i class="fa-solid fa-xmark text-lg"></i>
+            </button>
+            <div class="mb-6">
+                <span class="text-xs uppercase bg-blue-50 text-dark px-3 py-1 rounded-full font-semibold">Painel Médico Veterinário</span>
+                <h3 class="text-2xl font-bold tracking-tight text-dark mt-2" id="medical-modal-title">Prontuário & Gestão de Doação</h3>
+                <p class="text-xs text-slate-500 mt-1">Evolução clínica, avaliação de elegibilidade e registro de doações e intercorrências.</p>
+            </div>
+
+            <form onsubmit="saveMedicalRecord(event)" class="space-y-6">
+                <input type="hidden" id="med-animal-id">
+
+                <!-- Evolução e Informações Clínicas -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-border space-y-3">
+                    <h4 class="text-sm font-bold text-dark flex items-center gap-2">
+                        <i class="fa-solid fa-notes-medical text-blue-600"></i> Evolução & Dados Clínicos
+                    </h4>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Evolução Clínica / Prontuário</label>
+                        <textarea id="med-evolution" rows="3" placeholder="Descreva o estado de saúde, exames e observações clínicas..." class="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:border-dark"></textarea>
+                    </div>
+                </div>
+
+                <!-- Elegibilidade para Doação -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-border space-y-3">
+                    <h4 class="text-sm font-bold text-dark flex items-center gap-2">
+                        <i class="fa-solid fa-vial-circle-check text-emerald-600"></i> Avaliação de Elegibilidade
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Status de Elegibilidade</label>
+                            <select id="med-eligibility" class="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:border-dark">
+                                <option value="Apto para Doação">Apto para Doação</option>
+                                <option value="Inapto Temporariamente">Inapto Temporariamente</option>
+                                <option value="Inapto Definitivo">Inapto Definitivo</option>
+                                <option value="Em Avaliação">Em Avaliação</option>
+                            </select>
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Última Avaliação</label>
+                            <input type="date" id="med-eval-date" class="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:border-dark">
+                        </div>
+                    </div>
+                </div>
+
+                <!-- Doação e Intercorrências -->
+                <div class="bg-slate-50 p-4 rounded-2xl border border-border space-y-3">
+                    <h4 class="text-sm font-bold text-dark flex items-center gap-2">
+                        <i class="fa-solid fa-hand-holding-droplet text-red-600"></i> Registro de Doação & Intercorrência
+                    </h4>
+                    <div class="grid grid-cols-1 sm:grid-cols-2 gap-4">
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Volume Coletado (ml)</label>
+                            <input type="text" id="med-volume" placeholder="Ex: 450 ml" class="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:border-dark">
+                        </div>
+                        <div>
+                            <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Data da Doação</label>
+                            <input type="datetime-local" id="med-donation-date" class="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:border-dark">
+                        </div>
+                    </div>
+                    <div>
+                        <label class="block text-xs font-semibold uppercase text-slate-600 mb-1">Registro de Intercorrências / Reações</label>
+                        <textarea id="med-complications" rows="2" placeholder="Descreva qualquer reação, hipotensão ou evento adverso durante a coleta..." class="w-full px-4 py-2.5 bg-white border border-border rounded-xl text-sm focus:outline-none focus:border-dark"></textarea>
+                    </div>
+                </div>
+
+                <div class="flex gap-3">
+                    <button type="button" onclick="clearMedicalRecord()" class="w-1/3 py-3.5 bg-red-50 text-red-600 border border-red-200 rounded-xl font-semibold hover:bg-red-100 transition shadow-sm text-sm">
+                        Limpar Registros
+                    </button>
+                    <button type="submit" class="w-2/3 py-3.5 bg-dark text-white rounded-xl font-semibold hover:bg-blue-900 transition shadow-md text-sm">
+                        Salvar Prontuário e Atendimento
+                    </button>
+                </div>
             </form>
         </div>
     </div>
