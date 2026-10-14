@@ -1,9 +1,9 @@
 let currentUser = JSON.parse(localStorage.getItem('vet_current_user')) || null;
 
 let animalsData = JSON.parse(localStorage.getItem('vet_animals')) || [
-    { id: 1, name: 'Thor', species: 'Canino', breed: 'Golden Retriever', blood: 'DEA 1.1 Positivo', age: '4 anos · 30 kg', owner: 'Mariana Costa', photo: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=600&q=80', notes: 'Doador apto - Vacinas em dia.' },
-    { id: 2, name: 'Luna', species: 'Felino', breed: 'Siamês', blood: 'Tipo A', age: '2 anos · 4.2 kg', owner: 'Lucas Almeida', photo: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80', notes: 'Castrada. Histórico clínico regular.' },
-    { id: 3, name: 'Bob', species: 'Canino', breed: 'Bulldog Francês', blood: 'DEA 4 Negativo', age: '3 anos · 12 kg', owner: 'Juliana Ribeiro', photo: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80', notes: 'Acompanhamento preventivo e elegibilidade ativa.' }
+    { id: 1, name: 'Thor', species: 'Canino', breed: 'Golden Retriever', blood: 'DEA 1.1 Positivo', age: '4 anos · 30 kg', owner: 'Mariana Costa', photo: 'https://images.unsplash.com/photo-1552053831-71594a27632d?auto=format&fit=crop&w=600&q=80', notes: 'Doador apto - Vacinas em dia.', eligibility: 'Apto para Doação', evolution: 'Exames dentro da normalidade.' },
+    { id: 2, name: 'Luna', species: 'Felino', breed: 'Siamês', blood: 'Tipo A', age: '2 anos · 4.2 kg', owner: 'Lucas Almeida', photo: 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80', notes: 'Castrada. Histórico clínico regular.', eligibility: 'Em Avaliação' },
+    { id: 3, name: 'Bob', species: 'Canino', breed: 'Bulldog Francês', blood: 'DEA 4 Negativo', age: '3 anos · 12 kg', owner: 'Juliana Ribeiro', photo: 'https://images.unsplash.com/photo-1583511655857-d19b40a7a54e?auto=format&fit=crop&w=600&q=80', notes: 'Acompanhamento preventivo e elegibilidade ativa.', eligibility: 'Apto para Doação' }
 ];
 
 let appointmentsData = JSON.parse(localStorage.getItem('vet_appointments')) || [
@@ -368,6 +368,10 @@ function renderAnimals() {
             ? 'https://images.unsplash.com/photo-1514888286974-6c03e2ca1dba?auto=format&fit=crop&w=600&q=80' 
             : 'https://images.unsplash.com/photo-1543466835-00a7907e9de1?auto=format&fit=crop&w=600&q=80');
 
+        const eligibilityBadge = animal.eligibility 
+            ? `<span class="text-[10px] font-bold px-2 py-0.5 rounded-full ${animal.eligibility === 'Apto para Doação' ? 'bg-emerald-100 text-emerald-800' : 'bg-amber-100 text-amber-800'}">${animal.eligibility}</span>`
+            : '';
+
         card.innerHTML = `
             <div>
                 <div class="h-48 overflow-hidden bg-neutral-100 relative">
@@ -379,15 +383,20 @@ function renderAnimals() {
                         <h3 class="text-xl font-bold">${animal.name}</h3>
                         <span class="text-xs font-bold px-2.5 py-1 bg-red-50 text-red-600 rounded-full border border-red-200"><i class="fa-solid fa-droplet mr-1"></i> ${animal.blood || 'Não inform.'}</span>
                     </div>
-                    <p class="text-xs text-neutral-500 mb-4">${animal.breed} · ${animal.age}</p>
+                    <div class="flex items-center justify-between text-xs text-neutral-500 mb-3">
+                        <span>${animal.breed} · ${animal.age}</span>
+                        ${(isDoctor || isAdmin) ? eligibilityBadge : ''}
+                    </div>
                     <div class="space-y-1.5 text-xs text-neutral-600 mb-2">
                         <p><i class="fa-solid fa-user-tie w-5 text-neutral-400"></i> Tutor: <span class="font-medium text-dark">${animal.owner}</span></p>
                         <p><i class="fa-solid fa-notes-medical w-5 text-neutral-400"></i> ${animal.notes || 'Sem observações clínicas.'}</p>
+                        ${(isDoctor || isAdmin) && animal.evolution ? `<p class="p-2 bg-blue-50/50 rounded-lg border border-blue-100 mt-2 text-[11px]"><strong>Prontuário Médico:</strong> ${animal.evolution}</p>` : ''}
                     </div>
                 </div>
             </div>
             ${(isOwner || isAdmin || isDoctor) ? `
-                <div class="px-6 pb-6 pt-2 border-t border-border flex justify-end space-x-2">
+                <div class="px-6 pb-6 pt-2 border-t border-border flex flex-wrap gap-2 justify-end">
+                    ${(isDoctor || isAdmin) ? `<button onclick="openMedicalModal(${animal.id})" class="px-3 py-1.5 text-xs font-semibold bg-blue-900 text-white hover:bg-dark rounded-lg transition"><i class="fa-solid fa-stethoscope mr-1 text-nassauYellow"></i> Prontuário / Doação</button>` : ''}
                     ${(isOwner || isAdmin) ? `<button onclick="editAnimal(${animal.id})" class="px-3 py-1.5 text-xs font-semibold bg-neutral-100 hover:bg-neutral-200 rounded-lg transition">Editar</button>` : ''}
                     ${(isAdmin || isOwner) ? `<button onclick="deleteAnimal(${animal.id})" class="px-3 py-1.5 text-xs font-semibold text-red-600 bg-red-50 hover:bg-red-100 rounded-lg transition">Excluir</button>` : ''}
                 </div>
@@ -560,7 +569,7 @@ function saveAnimal(e) {
         if (id) {
             const index = animalsData.findIndex(a => a.id == id);
             if (index !== -1) {
-                animalsData[index] = { id: Number(id), ...data };
+                animalsData[index] = { ...animalsData[index], ...data };
                 showToast('Pet atualizado com sucesso!');
             }
         } else {
@@ -729,7 +738,6 @@ function renderClinics() {
     if (!grid) return;
     grid.innerHTML = '';
 
-    // Seleciona o container do topo da aba de clínicas para controlar a visibilidade e o nome do botão
     const tabClinicsSection = document.getElementById('tab-clinics');
     if (tabClinicsSection) {
         const headerActionDiv = tabClinicsSection.querySelector('.flex.flex-col.sm\\:flex-row.justify-between');
@@ -852,6 +860,84 @@ function renderClinicContactsList() {
         `;
         listContainer.appendChild(div);
     });
+}
+
+// ==========================================================
+// FUNÇÕES DE PRONTUÁRIO E REGISTROS CLÍNICOS (EXCLUSIVO MÉDICOS)
+// ==========================================================
+
+function openMedicalModal(animalId) {
+    if (!currentUser || (currentUser.role !== 'doctor' && currentUser.role !== 'admin')) {
+        showToast('Acesso permitido apenas para Médicos Veterinários.');
+        return;
+    }
+
+    const animal = animalsData.find(a => a.id === animalId);
+    if (!animal) return;
+
+    document.getElementById('med-animal-id').value = animal.id;
+    document.getElementById('medical-modal-title').innerText = `Prontuário Médico - ${animal.name}`;
+    
+    document.getElementById('med-evolution').value = animal.evolution || '';
+    document.getElementById('med-eligibility').value = animal.eligibility || 'Apto para Doação';
+    document.getElementById('med-eval-date').value = animal.evalDate || new Date().toISOString().split('T')[0];
+    document.getElementById('med-volume').value = animal.donationVolume || '';
+    document.getElementById('med-donation-date').value = animal.donationDate || '';
+    document.getElementById('med-complications').value = animal.complications || '';
+
+    openModal('medical-record-modal');
+}
+
+function saveMedicalRecord(e) {
+    e.preventDefault();
+    if (!currentUser || (currentUser.role !== 'doctor' && currentUser.role !== 'admin')) {
+        showToast('Ação não autorizada.');
+        return;
+    }
+
+    const animalId = document.getElementById('med-animal-id').value;
+    const animalIndex = animalsData.findIndex(a => a.id == animalId);
+
+    if (animalIndex !== -1) {
+        animalsData[animalIndex].evolution = document.getElementById('med-evolution').value;
+        animalsData[animalIndex].eligibility = document.getElementById('med-eligibility').value;
+        animalsData[animalIndex].evalDate = document.getElementById('med-eval-date').value;
+        animalsData[animalIndex].donationVolume = document.getElementById('med-volume').value;
+        animalsData[animalIndex].donationDate = document.getElementById('med-donation-date').value;
+        animalsData[animalIndex].complications = document.getElementById('med-complications').value;
+
+        saveData();
+        closeModal('medical-record-modal');
+        renderAnimals();
+        showToast('Prontuário e registros de doação atualizados com sucesso!');
+    }
+}
+
+// Função para apagar/limpar todos os registros médicos e de doação daquele pet
+function clearMedicalRecord() {
+    if (!currentUser || (currentUser.role !== 'doctor' && currentUser.role !== 'admin')) {
+        showToast('Ação não autorizada.');
+        return;
+    }
+
+    if (confirm('Deseja realmente apagar todos os registros clínicos, evolução e dados de doação deste animal?')) {
+        const animalId = document.getElementById('med-animal-id').value;
+        const animalIndex = animalsData.findIndex(a => a.id == animalId);
+
+        if (animalIndex !== -1) {
+            delete animalsData[animalIndex].evolution;
+            delete animalsData[animalIndex].eligibility;
+            delete animalsData[animalIndex].evalDate;
+            delete animalsData[animalIndex].donationVolume;
+            delete animalsData[animalIndex].donationDate;
+            delete animalsData[animalIndex].complications;
+
+            saveData();
+            closeModal('medical-record-modal');
+            renderAnimals();
+            showToast('Registros médicos apagados com sucesso!');
+        }
+    }
 }
 
 function showToast(message) {
